@@ -30,6 +30,52 @@
     addEventListener('resize', resize);
     resize();
 
+    // --- Original-Sprites aus Mindustry Classic (GPLv3, Anuken) laden.
+    // Schlägt das fehl (z. B. lokaler Test ohne /classic/), bleiben die Vektorformen.
+    var atlas = { img: null, regions: {} };
+    (function loadSprites() {
+        var base = '/classic/assets/sprites/';
+        fetch(base + 'sprites.atlas')
+            .then(function (r) { if (!r.ok) throw 0; return r.text(); })
+            .then(function (text) {
+                var lines = text.split('\n'), name = null;
+                for (var i = 1; i < lines.length; i++) {
+                    var l = lines[i];
+                    if (!l.trim()) { name = null; continue; }
+                    if (l[0] !== ' ' && l.indexOf(':') < 0) {
+                        name = l.trim();
+                        atlas.regions[name] = {};
+                    } else if (name) {
+                        var kv = l.trim().split(':');
+                        var p = (kv[1] || '').split(',');
+                        if (kv[0] === 'xy') { atlas.regions[name].x = +p[0]; atlas.regions[name].y = +p[1]; }
+                        if (kv[0] === 'size') { atlas.regions[name].w = +p[0]; atlas.regions[name].h = +p[1]; }
+                    }
+                }
+                var img = new Image();
+                img.onload = function () { atlas.img = img; };
+                img.src = base + 'sprites.png';
+            })
+            .catch(function () {});
+    })();
+
+    function sprite(name, x, y, w, h, quarterTurns) {
+        var r = atlas.regions[name];
+        if (!atlas.img || !r || r.w === undefined) return false;
+        ctx.imageSmoothingEnabled = false;
+        if (quarterTurns) {
+            ctx.save();
+            ctx.translate(x + w / 2, y + h / 2);
+            ctx.rotate(quarterTurns * Math.PI / 2);
+            ctx.drawImage(atlas.img, r.x, r.y, r.w, r.h, -w / 2, -h / 2, w, h);
+            ctx.restore();
+        } else {
+            ctx.drawImage(atlas.img, r.x, r.y, r.w, r.h, x, y, w, h);
+        }
+        return true;
+    }
+    function variant(base, x, y) { return base + ((x * 7 + y * 13) % 3 + 1); }
+
     // --- Netzwerk ---
     var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
     var wsUrl = proto + location.host +
@@ -236,9 +282,12 @@
         // Boden + Erz
         for (var x = x0; x <= x1; x++) {
             for (var y = y0; y <= y1; y++) {
+                var isOre = terrain[y * W + x] === 1;
+                if (isOre && sprite(variant('iron', x, y), tx(x), ty(y), ts + 1, ts + 1)) continue;
+                if (!isOre && sprite(variant('stone', x, y), tx(x), ty(y), ts + 1, ts + 1)) continue;
                 ctx.fillStyle = (x + y) % 2 ? '#22252b' : '#24272d';
                 ctx.fillRect(tx(x), ty(y), ts + 1, ts + 1);
-                if (terrain[y * W + x] === 1) {
+                if (isOre) {
                     ctx.fillStyle = '#8a6238';
                     ctx.fillRect(tx(x) + ts * .25, ty(y) + ts * .25, ts * .2, ts * .2);
                     ctx.fillRect(tx(x) + ts * .58, ty(y) + ts * .5, ts * .2, ts * .2);
@@ -255,53 +304,72 @@
             if (b.type === 'core') {
                 if (drawnCore) continue;
                 drawnCore = true;
-                ctx.fillStyle = '#3d6b4b';
-                ctx.fillRect(tx(b.x) + 2, ty(b.y) + 2, ts * 2 - 4, ts * 2 - 4);
-                ctx.fillStyle = '#8fe3a8';
-                ctx.fillRect(tx(b.x) + ts * .5, ty(b.y) + ts * .5, ts, ts);
+                if (!sprite('core', tx(b.x), ty(b.y), ts * 2, ts * 2)) {
+                    ctx.fillStyle = '#3d6b4b';
+                    ctx.fillRect(tx(b.x) + 2, ty(b.y) + 2, ts * 2 - 4, ts * 2 - 4);
+                    ctx.fillStyle = '#8fe3a8';
+                    ctx.fillRect(tx(b.x) + ts * .5, ty(b.y) + ts * .5, ts, ts);
+                }
             } else if (b.type === 'conveyor') {
-                ctx.fillStyle = '#3a3f48';
-                ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
-                ctx.save();
-                ctx.translate(bx + ts / 2, by + ts / 2);
-                ctx.rotate(b.rot * Math.PI / 2);
-                ctx.strokeStyle = '#7a828e'; ctx.lineWidth = 2 * DPR;
-                ctx.beginPath();
-                ctx.moveTo(-ts * .2, -ts * .18); ctx.lineTo(ts * .05, 0); ctx.lineTo(-ts * .2, ts * .18);
-                ctx.moveTo(ts * .05, -ts * .18); ctx.lineTo(ts * .3, 0); ctx.lineTo(ts * .05, ts * .18);
-                ctx.stroke();
-                ctx.restore();
+                if (!sprite('conveyor', bx, by, ts, ts, b.rot)) {
+                    ctx.fillStyle = '#3a3f48';
+                    ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
+                    ctx.save();
+                    ctx.translate(bx + ts / 2, by + ts / 2);
+                    ctx.rotate(b.rot * Math.PI / 2);
+                    ctx.strokeStyle = '#7a828e'; ctx.lineWidth = 2 * DPR;
+                    ctx.beginPath();
+                    ctx.moveTo(-ts * .2, -ts * .18); ctx.lineTo(ts * .05, 0); ctx.lineTo(-ts * .2, ts * .18);
+                    ctx.moveTo(ts * .05, -ts * .18); ctx.lineTo(ts * .3, 0); ctx.lineTo(ts * .05, ts * .18);
+                    ctx.stroke();
+                    ctx.restore();
+                }
             } else if (b.type === 'wall') {
-                ctx.fillStyle = '#5c636e';
-                ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
-                ctx.strokeStyle = '#7a828e'; ctx.lineWidth = DPR;
-                ctx.strokeRect(bx + ts * .2, by + ts * .2, ts * .6, ts * .6);
+                if (!sprite('ironwall', bx, by, ts, ts)) {
+                    ctx.fillStyle = '#5c636e';
+                    ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
+                    ctx.strokeStyle = '#7a828e'; ctx.lineWidth = DPR;
+                    ctx.strokeRect(bx + ts * .2, by + ts * .2, ts * .6, ts * .6);
+                }
             } else if (b.type === 'drill') {
-                ctx.fillStyle = '#4a4438';
-                ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
-                ctx.beginPath();
-                ctx.arc(bx + ts / 2, by + ts / 2, ts * .3, 0, 7);
-                ctx.fillStyle = '#e8a860'; ctx.fill();
+                if (!sprite('irondrill', bx, by, ts, ts)) {
+                    ctx.fillStyle = '#4a4438';
+                    ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
+                    ctx.beginPath();
+                    ctx.arc(bx + ts / 2, by + ts / 2, ts * .3, 0, 7);
+                    ctx.fillStyle = '#e8a860'; ctx.fill();
+                }
             } else if (b.type === 'turret') {
-                ctx.fillStyle = '#414d5e';
-                ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
-                ctx.beginPath();
-                ctx.arc(bx + ts / 2, by + ts / 2, ts * .26, 0, 7);
-                ctx.fillStyle = '#7fc7ff'; ctx.fill();
+                // ohne Munition (Eisen = 0) ausgegraut
+                if (copper < 1) ctx.globalAlpha = 0.45;
+                var ok = sprite('block', bx, by, ts, ts);
+                if (ok) sprite('turret', bx - ts * .1, by - ts * .1, ts * 1.2, ts * 1.2);
+                if (!ok) {
+                    ctx.fillStyle = '#414d5e';
+                    ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
+                    ctx.beginPath();
+                    ctx.arc(bx + ts / 2, by + ts / 2, ts * .26, 0, 7);
+                    ctx.fillStyle = '#7fc7ff'; ctx.fill();
+                }
+                ctx.globalAlpha = 1;
             }
         }
 
         // Items auf Bändern
-        ctx.fillStyle = '#e8a860';
         curr.items.forEach(function (it) {
-            ctx.fillRect(tx(it[0]) - ts * .12, ty(it[1]) - ts * .12, ts * .24, ts * .24);
+            if (!sprite('icon-iron', tx(it[0]) - ts * .18, ty(it[1]) - ts * .18, ts * .36, ts * .36)) {
+                ctx.fillStyle = '#e8a860';
+                ctx.fillRect(tx(it[0]) - ts * .12, ty(it[1]) - ts * .12, ts * .24, ts * .24);
+            }
         });
 
         // Gegner
         enemies.forEach(function (e) {
             var ex = tx(e[1]), ey = ty(e[2]);
-            ctx.fillStyle = '#d15b5b';
-            ctx.fillRect(ex - ts * .3, ey - ts * .3, ts * .6, ts * .6);
+            if (!sprite('standardenemy-t1', ex - ts * .38, ey - ts * .38, ts * .76, ts * .76)) {
+                ctx.fillStyle = '#d15b5b';
+                ctx.fillRect(ex - ts * .3, ey - ts * .3, ts * .6, ts * .6);
+            }
             ctx.fillStyle = '#552222';
             ctx.fillRect(ex - ts * .3, ey - ts * .45, ts * .6, ts * .08);
             ctx.fillStyle = '#ff9f9f';
@@ -319,6 +387,16 @@
         // Spieler
         players.forEach(function (p) {
             var px = tx(p[1]), py = ty(p[2]);
+            if (sprite('mech-standard', px - ts * .42, py - ts * .42, ts * .84, ts * .84)) {
+                if (p[0] === myId) {
+                    ctx.strokeStyle = 'rgba(127,199,255,.8)';
+                    ctx.lineWidth = 2 * DPR;
+                    ctx.beginPath();
+                    ctx.arc(px, py, ts * .5, 0, 7);
+                    ctx.stroke();
+                }
+                return;
+            }
             ctx.save();
             ctx.translate(px, py);
             ctx.fillStyle = p[0] === myId ? '#7fc7ff' : '#8fe3a8';

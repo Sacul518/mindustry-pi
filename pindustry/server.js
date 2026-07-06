@@ -21,7 +21,7 @@ const BLOCKS = {
     turret:   { cost: 30, hp: 120 },
 };
 const CORE_HP = 1200;
-const START_COPPER = 60;
+const START_COPPER = 80;
 const WAVE_INTERVAL = 40;
 
 // --- Zustand ---
@@ -141,7 +141,7 @@ function tick() {
     for (const [k, b] of buildings) {
         if (b.type === 'drill') {
             b.timer = (b.timer || 0) + DT;
-            if (b.timer >= 2.5) {
+            if (b.timer >= 1.8) {
                 const [dx, dy] = DIRS[b.rot];
                 const nx = b.x + dx, ny = b.y + dy;
                 const nb = buildings.get(key(nx, ny));
@@ -153,9 +153,10 @@ function tick() {
             }
         } else if (b.type === 'turret') {
             b.timer = (b.timer || 0) - DT;
-            if (b.timer <= 0) {
+            // Türme verbrauchen Eisen als Munition — ohne Vorrat schweigen sie
+            if (b.timer <= 0 && copper >= 1) {
                 const e = nearestEnemy(b.x + 0.5, b.y + 0.5, 7.5);
-                if (e) { shoot(b.x + 0.5, b.y + 0.5, e, 12); b.timer = 0.5; }
+                if (e) { copper--; shoot(b.x + 0.5, b.y + 0.5, e, 16); b.timer = 0.6; }
             }
         }
     }
@@ -206,7 +207,7 @@ function tick() {
             const e = enemies[j];
             if ((e.x - bl.x) ** 2 + (e.y - bl.y) ** 2 < 0.25) {
                 e.hp -= bl.dmg;
-                if (e.hp <= 0) { enemies.splice(j, 1); copper += 2; }
+                if (e.hp <= 0) { enemies.splice(j, 1); copper += 1; }
                 hit = true;
                 break;
             }

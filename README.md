@@ -155,6 +155,9 @@ Startseite). Das Spiel selbst stammt komplett von anderen:
   stammen aus dem Mirror
   **[minidogg/MindustryClassicMirror](https://github.com/minidogg/MindustryClassicMirror)**
   von **[minidogg](https://github.com/minidogg)**.
+- **Pindustry** (Ordner `pindustry/`) ist ein eigenes Mini-Spiel (kein Port),
+  verwendet aber die Original-Sprites aus Mindustry Classic
+  (`web/classic/assets/sprites/`) — Grafiken © Anuken, GPLv3.
 
 Mindustry ist unter der **GPL v3** lizenziert; dieses Repo steht deshalb
 ebenfalls unter GPL v3 (siehe [LICENSE](LICENSE)). Gedacht für den privaten
