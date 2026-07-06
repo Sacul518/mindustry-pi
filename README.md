@@ -57,11 +57,20 @@ http://<die-IP-aus-Schritt-3>
 *Du solltest sehen:* die Seite „Mindustry auf dem Pi" mit einem gelben
 Start-Button für die Browser-Version.
 
-**Schritt 5 — Multiplayer beitreten.** Auf Mac/PC/Handy das kostenlose Spiel
-installieren (Links stehen auf der Webseite), dann im Spiel:
+**Schritt 5 — Multiplayer beitreten.** Auf Mac/PC/Handy das Spiel installieren
+(Links stehen auf der Webseite; Mac/PC/Android kostenlos, iPhone/iPad 1,99 €),
+dann im Spiel:
 **Spielen → Mehrspieler → Server hinzufügen** → `<pi-ip>:6567` eintragen.
 
 *Du solltest sehen:* den Server in der Liste, mit Karte und Spielerzahl. Draufklicken → du bist drin.
+
+> **Hinweis fürs iPad/iPhone:** Beim ersten Verbinden fragt iOS
+> „…möchte Geräte im lokalen Netzwerk suchen" — das musst du **erlauben**,
+> sonst findet das Spiel den Server nicht. (Falls versehentlich abgelehnt:
+> Einstellungen → Datenschutz → Lokales Netzwerk → Mindustry einschalten.)
+> Die Classic-Browser-Version auf der Webseite ist übrigens für Maus und
+> Tastatur gebaut — auf dem iPad-Touchscreen ist sie nur eingeschränkt spielbar;
+> fürs iPad ist die App der richtige Weg.
 
 ## Verwaltung des Servers
 
