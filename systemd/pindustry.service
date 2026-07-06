@@ -1,0 +1,15 @@
+[Unit]
+Description=Pindustry Browser-Koop-Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=mindustry
+WorkingDirectory=/opt/pindustry
+Environment=PORT=8372
+ExecStart=/usr/bin/node /opt/pindustry/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

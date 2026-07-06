@@ -1,12 +1,16 @@
 # Mindustry auf dem Raspberry Pi
 
-Dieses Paket macht aus deinem Raspberry Pi zwei Dinge gleichzeitig:
+Dieses Paket macht aus deinem Raspberry Pi drei Dinge gleichzeitig:
 
 1. **Einen echten Mindustry-Multiplayer-Server** (aktuelles Mindustry v8, Port 6567) —
-   dafür brauchen die Mitspieler das kostenlose Spiel auf Mac/PC/Handy.
-2. **Eine Webseite** (Port 80): Wer im lokalen Netzwerk `http://<pi-ip>` in Safari öffnet,
-   kann sofort **Mindustry Classic** (die Original-Version von 2018) im Browser spielen
-   und sieht die Anleitung, wie man dem Multiplayer-Server beitritt.
+   dafür brauchen die Mitspieler das Spiel auf Mac/PC/Handy.
+2. **Pindustry** — ein kleines, von Grund auf neu geschriebenes
+   Fabrik-Verteidigungsspiel im Stil von Mindustry, das **direkt im Browser mit
+   echtem Koop-Multiplayer** läuft (WebSockets, Touch-Steuerung fürs iPad).
+   Kein Port des Originals, sondern ein eigenes Mini-Spiel.
+3. **Eine Webseite** (Port 80): Wer im lokalen Netzwerk `http://<pi-ip>` in Safari öffnet,
+   findet beides — plus **Mindustry Classic** (die Original-Version von 2018)
+   als Browser-Einzelspieler.
 
 > **Warum nicht das aktuelle Mindustry im Browser?**
 > Das aktuelle Mindustry ist ein Java-Programm ohne Web-Version, und sein Multiplayer
@@ -72,7 +76,17 @@ dann im Spiel:
 > Tastatur gebaut — auf dem iPad-Touchscreen ist sie nur eingeschränkt spielbar;
 > fürs iPad ist die App der richtige Weg.
 
-## Verwaltung des Servers
+## Pindustry (Koop im Browser)
+
+Öffne `http://<pi-ip>` und tippe auf **„Pindustry starten"** — jeder im WLAN,
+der das tut, landet auf derselben Karte. Steuerung: Joystick (Touch) bzw.
+WASD (Tastatur), Bauen durch Antippen/Klicken, Block unten auswählen,
+**Drehen** dreht Bänder/Bohrer, **Abriss** + Antippen reißt ab
+(Rechtsklick geht auch). Bohrer müssen auf Erz (braune Punkte) stehen und
+brauchen ein Band, das zum grünen Kern führt. Der Dienst heißt `pindustry`
+(`sudo systemctl status pindustry`, Log: `sudo journalctl -u pindustry -f`).
+
+## Verwaltung des Mindustry-Servers
 
 | Was | Befehl (auf dem Pi) |
 |---|---|
@@ -111,9 +125,12 @@ sudo systemctl restart mindustry-server
 mindustry-pi/
 ├── install.sh                     # Einrichtungs-Skript (auf dem Pi ausführen)
 ├── nginx-mindustry.conf           # Webserver-Konfiguration (Port 80)
+├── pindustry/                     # Eigenes Mini-Koop-Spiel für den Browser
+│   ├── server.js                  #   Spiellogik (Node.js, WebSockets, Port 8372)
+│   └── public/                    #   Browser-Client (Canvas, Touch)
 ├── server/                        # Hierhin lädt install.sh den offiziellen
 │                                  #   Server (server-release.jar) von GitHub
-├── systemd/mindustry-server.service  # Startet den Server automatisch beim Booten
+├── systemd/                       # Autostart-Dienste (mindustry-server, pindustry)
 └── web/                           # Die Webseite
     ├── index.html                 # Startseite mit Anleitung
     └── classic/                   # Mindustry Classic (HTML5, spielbar im Browser)

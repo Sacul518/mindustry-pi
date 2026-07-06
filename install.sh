@@ -13,11 +13,11 @@ cd "$(dirname "$0")"
 
 MINDUSTRY_VERSION="v158.1"
 
-echo "==> Schritt 1/5: Java und nginx installieren ..."
+echo "==> Schritt 1/6: Java, nginx und Node.js installieren ..."
 apt-get update
-apt-get install -y default-jre-headless nginx curl
+apt-get install -y default-jre-headless nginx curl nodejs npm
 
-echo "==> Schritt 2/5: Mindustry-Server nach /opt/mindustry kopieren ..."
+echo "==> Schritt 2/6: Mindustry-Server nach /opt/mindustry kopieren ..."
 mkdir -p server
 if [ ! -f server/server-release.jar ]; then
     echo "    Lade offiziellen Mindustry-Server $MINDUSTRY_VERSION von GitHub ..."
@@ -29,22 +29,33 @@ mkdir -p /opt/mindustry
 cp server/server-release.jar /opt/mindustry/
 chown -R mindustry:mindustry /opt/mindustry
 
-echo "==> Schritt 3/5: Webseite nach /var/www/mindustry kopieren ..."
+echo "==> Schritt 3/6: Pindustry (Browser-Koop) nach /opt/pindustry kopieren ..."
+mkdir -p /opt/pindustry
+cp pindustry/server.js pindustry/package.json /opt/pindustry/
+(cd /opt/pindustry && npm install --omit=dev --no-audit --no-fund)
+chown -R mindustry:mindustry /opt/pindustry
+
+echo "==> Schritt 4/6: Webseite nach /var/www/mindustry kopieren ..."
 mkdir -p /var/www/mindustry
 cp -r web/. /var/www/mindustry/
+mkdir -p /var/www/mindustry/pindustry
+cp -r pindustry/public/. /var/www/mindustry/pindustry/
 chown -R www-data:www-data /var/www/mindustry
 
-echo "==> Schritt 4/5: nginx einrichten ..."
+echo "==> Schritt 5/6: nginx einrichten ..."
 cp nginx-mindustry.conf /etc/nginx/sites-available/mindustry
 ln -sf /etc/nginx/sites-available/mindustry /etc/nginx/sites-enabled/mindustry
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
 
-echo "==> Schritt 5/5: Mindustry-Server als Dienst starten ..."
+echo "==> Schritt 6/6: Spiel-Server als Dienste starten ..."
 cp systemd/mindustry-server.service /etc/systemd/system/
+cp systemd/pindustry.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now mindustry-server
+systemctl enable --now pindustry
+systemctl restart pindustry
 
 IP=$(hostname -I | awk '{print $1}')
 echo

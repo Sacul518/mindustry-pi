@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Pindustry</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #14161a;
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif; overscroll-behavior: none; }
+  canvas { display: block; touch-action: none; }
+  #hud { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 0; right: 0;
+      display: flex; justify-content: center; gap: 18px; pointer-events: none;
+      color: #e8e6e3; font-weight: 600; font-size: 15px; text-shadow: 0 1px 3px #000; }
+  #hud .copper { color: #e8a860; }
+  #corebar { position: fixed; top: calc(34px + env(safe-area-inset-top)); left: 50%;
+      transform: translateX(-50%); width: 220px; height: 8px; border-radius: 4px;
+      background: #333; overflow: hidden; }
+  #corefill { height: 100%; width: 100%; background: #8fe3a8; transition: width .3s; }
+  #msg { position: fixed; top: calc(52px + env(safe-area-inset-top)); left: 0; right: 0;
+      text-align: center; color: #ffd37f; font-weight: 700; font-size: 17px;
+      text-shadow: 0 1px 3px #000; pointer-events: none; }
+  #bar { position: fixed; bottom: calc(10px + env(safe-area-inset-bottom)); left: 50%;
+      transform: translateX(-50%); display: flex; gap: 10px; }
+  .slot { width: 56px; height: 56px; border-radius: 10px; background: rgba(30,33,38,.85);
+      border: 2px solid #2e323a; color: #c9c6c0; font-size: 11px; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; touch-action: none; }
+  .slot svg { width: 26px; height: 26px; }
+  .slot.sel { border-color: #ffd37f; background: rgba(58,51,32,.9); }
+  .slot .cost { color: #e8a860; font-size: 10px; }
+  #vjoy { position: fixed; left: calc(20px + env(safe-area-inset-left));
+      bottom: calc(20px + env(safe-area-inset-bottom)); width: 140px; height: 140px;
+      border-radius: 50%; background: rgba(255,255,255,.08);
+      border: 2px solid rgba(255,255,255,.25); touch-action: none; display: none; }
+  #vknob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px;
+      margin: -28px 0 0 -28px; border-radius: 50%;
+      background: rgba(255,211,127,.55); border: 2px solid rgba(255,211,127,.9); }
+  #conn { position: fixed; inset: 0; background: rgba(20,22,26,.92); color: #e8e6e3;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; font-size: 17px; z-index: 10; text-align: center; padding: 20px; }
+  #conn h1 { color: #ffd37f; font-size: 30px; }
+  #conn small { color: #9a9790; max-width: 420px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud">
+  <span class="copper">⬤ <span id="copper">0</span></span>
+  <span>Welle <span id="wave">0</span> · nächste in <span id="next">–</span>s</span>
+</div>
+<div id="corebar"><div id="corefill"></div></div>
+<div id="msg"></div>
+<div id="bar"></div>
+<div id="vjoy"><div id="vknob"></div></div>
+<div id="conn">
+  <h1>Pindustry</h1>
+  <div id="connstate">Verbinde …</div>
+  <small>Mini-Koop-Fabrikspiel, inspiriert von Mindustry (Anuken).
+  Beschützt gemeinsam den Kern: Bohrer aufs Erz, Förderbänder zum Kern,
+  Türme gegen die Wellen. Laufen: Joystick/WASD · Bauen: Antippen ·
+  Drehen: R-Knopf · Abriss: Abriss-Modus wählen und antippen.</small>
+</div>
+<script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "pindustry",
+  "version": "1.0.0",
+  "description": "Mini-Koop-Fabrikspiel im Browser, inspiriert von Mindustry (Anuken)",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
