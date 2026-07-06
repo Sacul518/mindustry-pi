@@ -76,6 +76,29 @@
     }
     function variant(base, x, y) { return base + ((x * 7 + y * 13) % 3 + 1); }
 
+    // Richtungspfeil (Chevron) über Gebäuden, damit man Orientierung erkennt
+    function arrow(cx, cy, rot, size, color, width) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot * Math.PI / 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-size * .35, -size * .45);
+        ctx.lineTo(size * .35, 0);
+        ctx.lineTo(-size * .35, size * .45);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function hasOutput(b) {
+        var d = DIRS[b.rot || 0];
+        var nb = buildings[(b.x + d[0]) + ',' + (b.y + d[1])];
+        return nb && (nb.type === 'conveyor' || nb.type === 'core');
+    }
+
     // --- Netzwerk ---
     var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
     var wsUrl = proto + location.host +
@@ -311,7 +334,10 @@
                     ctx.fillRect(tx(b.x) + ts * .5, ty(b.y) + ts * .5, ts, ts);
                 }
             } else if (b.type === 'conveyor') {
-                if (!sprite('conveyor', bx, by, ts, ts, b.rot)) {
+                if (sprite('conveyor', bx, by, ts, ts, b.rot)) {
+                    arrow(bx + ts / 2, by + ts / 2, b.rot, ts * .38,
+                          'rgba(255,255,255,.4)', 1.5 * DPR);
+                } else {
                     ctx.fillStyle = '#3a3f48';
                     ctx.fillRect(bx + 1, by + 1, ts - 2, ts - 2);
                     ctx.save();
@@ -338,6 +364,20 @@
                     ctx.beginPath();
                     ctx.arc(bx + ts / 2, by + ts / 2, ts * .3, 0, 7);
                     ctx.fillStyle = '#e8a860'; ctx.fill();
+                }
+                // Ausgangsrichtung deutlich markieren
+                var dd = DIRS[b.rot || 0];
+                arrow(bx + ts / 2 + dd[0] * ts * .32, by + ts / 2 + dd[1] * ts * .32,
+                      b.rot || 0, ts * .34, 'rgba(255,211,127,.95)', 2 * DPR);
+                // ohne Band/Kern am Ausgang: blinkendes Warnzeichen
+                if (!hasOutput(b) && (Date.now() / 500 | 0) % 2 === 0) {
+                    ctx.font = 'bold ' + (ts * .7) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.lineWidth = 3 * DPR;
+                    ctx.strokeStyle = '#000';
+                    ctx.strokeText('!', bx + ts / 2, by - ts * .15);
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.fillText('!', bx + ts / 2, by - ts * .15);
                 }
             } else if (b.type === 'turret') {
                 // ohne Munition (Eisen = 0) ausgegraut
@@ -409,8 +449,38 @@
             ctx.restore();
         });
 
-        // Bau-Vorschau (Desktop)
+        // Turm ausgewählt: Reichweite aller Türme anzeigen (hilft beim Planen)
+        if (selected === 'turret' && !removeMode) {
+            ctx.strokeStyle = 'rgba(127,199,255,.35)';
+            ctx.lineWidth = 1.5 * DPR;
+            for (var tk in buildings) {
+                var tb = buildings[tk];
+                if (tb.type !== 'turret') continue;
+                ctx.beginPath();
+                ctx.arc(tx(tb.x + 0.5), ty(tb.y + 0.5), 7.5 * ts, 0, 7);
+                ctx.stroke();
+            }
+        }
+
+        // Bau-Vorschau (Desktop): Block halbtransparent mit Drehung anzeigen
         if (hover && !isTouch && !removeMode) {
+            var SPRITES = { conveyor: 'conveyor', drill: 'irondrill', turret: 'turret', wall: 'ironwall' };
+            ctx.globalAlpha = 0.55;
+            sprite(SPRITES[selected], tx(hover.x), ty(hover.y), ts, ts,
+                   selected === 'conveyor' ? rot : 0);
+            ctx.globalAlpha = 1;
+            if (selected === 'drill' || selected === 'conveyor') {
+                var hd = DIRS[rot];
+                arrow(tx(hover.x) + ts / 2 + hd[0] * ts * .32, ty(hover.y) + ts / 2 + hd[1] * ts * .32,
+                      rot, ts * .34, 'rgba(255,211,127,.95)', 2 * DPR);
+            }
+            if (selected === 'turret') {
+                ctx.strokeStyle = 'rgba(127,199,255,.5)';
+                ctx.lineWidth = 1.5 * DPR;
+                ctx.beginPath();
+                ctx.arc(tx(hover.x) + ts / 2, ty(hover.y) + ts / 2, 7.5 * ts, 0, 7);
+                ctx.stroke();
+            }
             ctx.strokeStyle = 'rgba(255,211,127,.7)';
             ctx.lineWidth = 2 * DPR;
             ctx.strokeRect(tx(hover.x) + 1, ty(hover.y) + 1, ts - 2, ts - 2);
