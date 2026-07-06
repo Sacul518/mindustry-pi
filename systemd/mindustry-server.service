@@ -1,0 +1,14 @@
+[Unit]
+Description=Mindustry Dedicated Server (v8)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=mindustry
+WorkingDirectory=/opt/mindustry
+ExecStart=/usr/bin/java -Xmx1G -jar /opt/mindustry/server-release.jar host
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

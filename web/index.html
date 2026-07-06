@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mindustry auf dem Pi</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #14161a;
+    color: #e8e6e3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  h1 { color: #ffd37f; margin: 16px 0 4px; text-align: center; }
+  .sub { color: #9a9790; margin: 0 0 28px; text-align: center; }
+  .card {
+    background: #1e2126;
+    border: 1px solid #2e323a;
+    border-radius: 12px;
+    padding: 20px 22px;
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 6px; font-size: 1.15rem; color: #ffd37f; }
+  .tag { font-size: .75rem; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 8px; }
+  .tag.solo { background: #3a3320; color: #ffd37f; }
+  .tag.multi { background: #1f3a2a; color: #8fe3a8; }
+  p, li { line-height: 1.5; color: #c9c6c0; }
+  a { color: #7fc7ff; }
+  .btn {
+    display: inline-block;
+    background: #ffd37f;
+    color: #1a1a1a;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+  .btn:active { transform: translateY(1px); }
+  code, .addr {
+    background: #14161a;
+    border: 1px solid #2e323a;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: ui-monospace, Menlo, monospace;
+    color: #8fe3a8;
+  }
+  .addr { font-size: 1.2rem; padding: 8px 14px; display: inline-block; margin: 6px 0; }
+  ol { padding-left: 22px; }
+  footer { color: #6d6a64; font-size: .8rem; margin-top: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Mindustry auf dem Pi</h1>
+<p class="sub">Dieser Raspberry Pi hostet zwei Dinge – such dir aus, wie du spielen willst.</p>
+
+<div class="card">
+  <h2>Sofort im Browser spielen <span class="tag solo">Einzelspieler</span></h2>
+  <p>Mindustry <strong>Classic</strong> (die Original-Version von 2018) läuft direkt hier im Browser –
+     nichts installieren, einfach loslegen. Funktioniert auch in Safari.</p>
+  <a class="btn" href="classic/">▶ Classic im Browser starten</a>
+</div>
+
+<div class="card">
+  <h2>Richtiges Multiplayer <span class="tag multi">aktuelles Mindustry&nbsp;v8</span></h2>
+  <p>Auf diesem Pi läuft außerdem ein echter Mindustry-Server für Koop/Multiplayer.
+     Dafür brauchst du das (kostenlose) Spiel auf deinem Gerät – Browser reicht hier leider nicht,
+     das kann Mindustry technisch nicht.</p>
+  <p>Server-Adresse:</p>
+  <div class="addr" id="addr">…</div>
+  <ol>
+    <li>Mindustry installieren:
+      <a href="https://anuke.itch.io/mindustry" target="_blank" rel="noopener">Mac/Windows/Linux (itch.io, kostenlos)</a>,
+      <a href="https://apps.apple.com/app/mindustry/id1385258906" target="_blank" rel="noopener">iPhone/iPad</a>,
+      <a href="https://play.google.com/store/apps/details?id=io.anuke.mindustry" target="_blank" rel="noopener">Android</a>
+    </li>
+    <li>Im Spiel: <strong>Spielen → Mehrspieler → Server hinzufügen</strong></li>
+    <li>Die Adresse oben eintragen und verbinden. Fertig!</li>
+  </ol>
+</div>
+
+<footer>
+  <a href="https://github.com/Anuken/Mindustry" target="_blank" rel="noopener">Mindustry</a> von Anuken (GPLv3) ·
+  Classic-Webversion via <a href="https://github.com/minidogg/MindustryClassicMirror" target="_blank" rel="noopener">MindustryClassicMirror</a> ·
+  gehostet im lokalen Netzwerk
+</footer>
+
+<script>
+  document.getElementById("addr").textContent = location.hostname + ":6567";
+</script>
+
+</body>
+</html>
